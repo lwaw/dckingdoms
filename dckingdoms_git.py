@@ -1029,11 +1029,11 @@ def help():
     msg = msg + " attack_region kingdomname regionname \n use_workpower kingdomname regionname amount \n"
     
     msg = msg + "\n"
-    msg = msg + "**citizen commands:** \n"
+    msg = msg + "**Citizen commands:** \n"
     msg = msg + " join_kingdom kingdomname regionname \n train \n work \n change_location regionname \n attack regionname amount \n defend regionname amount \n leave_game \n"
 
     msg = msg + "\n"
-    msg = msg + "**general commands:** \n"
+    msg = msg + "**General commands:** \n"
     msg = msg + " profile @user \n kingdom kingdomname \n kingdom_list \n region_list \n status_battle regionname \n help"
     return msg
 
