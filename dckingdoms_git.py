@@ -1030,7 +1030,7 @@ def help():
     
     msg = msg + "\n"
     msg = msg + "**citizen commands:** \n"
-    msg = msg + " join_kingdom kingdomname \n train \n work \n change_location regionname \n attack regionname amount \n defend regionname amount \n leave_game \n"
+    msg = msg + " join_kingdom kingdomname regionname \n train \n work \n change_location regionname \n attack regionname amount \n defend regionname amount \n leave_game \n"
 
     msg = msg + "\n"
     msg = msg + "**general commands:** \n"
