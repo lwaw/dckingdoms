@@ -14,19 +14,55 @@ The following commands are available:
 
 All commands start with "-dck"
 
-Admin commands: - start\_game - end\_game - create\_kingdom kingdomname
-- create\_region regionname - set\_admin @user - demote\_admin @user -
-set\_king @user
+Admin commands:
 
-King commands: - attack\_region kingdomname regionname - use\_workpower
-kingdomname regionname amount
+-   start\_game
 
-Citizen commands: - join\_kingdom kingdomname regionname - train - work
-- change\_location regionname - attack regionname amount - defend
-regionname amount - leave\_game
+-   end\_game
 
-General commands: - profile @user - kingdom kingdomname - kingdom\_list
-- region\_list - status\_battle regionname
+-   create\_kingdom kingdomname
+
+-   create\_region regionname
+
+-   set\_admin @user
+
+-   demote\_admin @user
+
+-   set\_king @user
+
+King commands:
+
+-   attack\_region kingdomname regionname
+
+-   use\_workpower kingdomname regionname amount
+
+Citizen commands:
+
+-   join\_kingdom kingdomname regionname
+
+-   train
+
+-   work
+
+-   change\_location regionname
+
+-   attack regionname amount
+
+-   defend regionname amount
+
+-   leave\_game
+
+General commands:
+
+-   profile @user
+
+-   kingdom kingdomname
+
+-   kingdom\_list
+
+-   region\_list
+
+-   status\_battle regionname
 
 If you encouter errors or have suggestions, please send an email to
 info@fantasy-sim.com.
