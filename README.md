@@ -29,7 +29,7 @@ Admin commands:
 
 -   demote\_admin @user
 
--   set\_king @user
+-   set\_king kingdomname @user
 
 King commands:
 

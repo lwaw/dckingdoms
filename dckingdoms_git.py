@@ -1023,14 +1023,14 @@ def leave_game(server_id, user_id):
         return msg
     
 def help():
-    msg = "All commands start with -dck \n"
+    msg = "All commands start with -dck, arguments are separated by a whitespace: -dck set_admin @user \n"
     
     msg = msg + "\n"
     msg = msg + "**By using this bot users agree that their discord user_id will be stored while the game is running. Users may leave the game at any time by using the leave_game command** \n"
     
     msg = msg + "\n"
     msg = msg + "**Admin commands:** \n"
-    msg = msg + " start_game \n end_game \n create_kingdom kingdomname \n create_region regionname \n set_admin @user \n demote_admin @user \n set_king @user \n"
+    msg = msg + " start_game \n end_game \n create_kingdom kingdomname \n create_region regionname \n set_admin @user \n demote_admin @user \n set_king kingdomname @user \n"
     
     msg = msg + "\n"
     msg = msg + "**King commands:** \n"
