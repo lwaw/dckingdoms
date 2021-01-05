@@ -12,7 +12,8 @@ removed from the database.
 
 The following commands are available:
 
-All commands start with "-dck"
+All commands start with "-dck", arguments are separated by a whitespace:
+"-dck set_admin @user"
 
 Admin commands:
 
