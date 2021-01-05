@@ -2,6 +2,7 @@ import discord
 import pandas as pd
 import pymysql
 from datetime import datetime, timedelta
+import threading
 
 server = ""
 user = "" 
@@ -11,6 +12,13 @@ schema = ""
 db = pymysql.connect(server, user, pwd, schema)
 db.db
 cursor = db.cursor(pymysql.cursors.DictCursor) 
+
+#check connection to database
+def ping_msql():
+  threading.Timer(3600.0, ping_msql).start()
+  db.ping(reconnect=True)
+
+ping_msql()
 
 def get_datetime():
         now = datetime.now()
@@ -1047,6 +1055,9 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
+    
+    if message.channel.type.name != discord.ChannelType.text.name:
+        return
 
     if message.content.startswith('-dck'):
         message_content = message.content.split(" ")
@@ -1066,16 +1077,19 @@ async def on_message(message):
         if message_content[1] == "start_game":
             botreply = start_game(server_id, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "end_game":
             botreply = end_game(server_id, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "create_kingdom" and len(message_content) == 3:
             kingdom_name = message_content[2]
             kingdom_name = db.escape_string(kingdom_name)
             botreply = create_kingdom(server_id, author_id, kingdom_name)
             await message.channel.send(botreply)
+            return
             
         if message_content[1] == "create_region" and len(message_content) == 4:
             kingdom_name = message_content[2]
@@ -1084,6 +1098,7 @@ async def on_message(message):
             region_name = db.escape_string(region_name)
             botreply = create_region(server_id, author_id, kingdom_name, region_name)
             await message.channel.send(botreply)
+            return
             
         if message_content[1] == "set_admin" and len(message_content) == 3:
             try:
@@ -1094,6 +1109,8 @@ async def on_message(message):
             except IndexError:
                 return
             
+            return
+            
         if message_content[1] == "demote_admin" and len(message_content) == 3:
             try:
                 mention_id = message.mentions[0]
@@ -1102,6 +1119,8 @@ async def on_message(message):
                 await message.channel.send(botreply)
             except IndexError:
                 return
+            
+            return
             
         if message_content[1] == "set_king" and len(message_content) == 4:
             try:
@@ -1113,6 +1132,8 @@ async def on_message(message):
                 await message.channel.send(botreply)
             except IndexError:
                 return
+            
+            return
         
         #king commands
         if message_content[1] == "attack_region" and len(message_content) == 4:
@@ -1122,6 +1143,7 @@ async def on_message(message):
             region_name = db.escape_string(region_name)
             botreply = attack_region(server_id, author_id, kingdom_name, region_name)
             await message.channel.send(botreply)
+            return
         
         #king commands
         if message_content[1] == "use_workpower" and len(message_content) == 5:
@@ -1140,6 +1162,8 @@ async def on_message(message):
             except ValueError:
                 return
             
+            return
+            
         #citizen commands
         if message_content[1] == "join_kingdom" and len(message_content) == 4:
             kingdom_name = message_content[2]
@@ -1148,6 +1172,7 @@ async def on_message(message):
             region_name = db.escape_string(region_name)
             botreply = join_kingdom(server_id, author_id, kingdom_name, region_name)
             await message.channel.send(botreply)
+            return
             
         if message_content[1] == "train":
             botreply = train(server_id, author_id)
@@ -1164,6 +1189,7 @@ async def on_message(message):
             region_name = db.escape_string(region_name)
             botreply = change_location(server_id, region_name, author_id)
             await message.channel.send(botreply)
+            return
             
         if message_content[1] == "attack" and len(message_content) == 4:
             region_name = message_content[2]
@@ -1178,6 +1204,8 @@ async def on_message(message):
                 
             except ValueError:
                 return
+            
+            return
         
         if message_content[1] == "defend" and len(message_content) == 4:
             region_name = message_content[2]
@@ -1192,6 +1220,8 @@ async def on_message(message):
                 
             except ValueError:
                 return
+            
+            return
         
         if message_content[1] == "profile":            
             try:
@@ -1202,6 +1232,8 @@ async def on_message(message):
                 await message.channel.send(botreply)
             except IndexError:
                 return
+            
+            return
         
         if message_content[1] == "kingdom" and len(message_content) == 3:
             kingdom_name = message_content[2]
@@ -1221,14 +1253,17 @@ async def on_message(message):
                 
             botreply = kingdom_info(server_id, kingdom_name, king_name, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "kingdom_list":
             botreply = kingdom_list(server_id, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "region_list" and len(message_content) == 2:
             botreply = region_list(server_id, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "status_battle" and len(message_content) == 3:
             region_name = message_content[2]
@@ -1236,6 +1271,7 @@ async def on_message(message):
             
             botreply = status_battle(server_id, region_name, author_id)
             await message.channel.send(botreply)
+            return
         
         if message_content[1] == "leave_game":
             botreply = leave_game(server_id, author_id)
@@ -1245,5 +1281,6 @@ async def on_message(message):
         if message_content[1] == "help":
             botreply = help()
             await message.channel.send(botreply)
+            return
 
 client.run('')
