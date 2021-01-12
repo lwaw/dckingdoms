@@ -23,7 +23,7 @@ Admin commands:
 
 -   create\_kingdom kingdomname
 
--   create\_region regionname
+-   create\_region kingdomname regionname
 
 -   set\_admin @user
 

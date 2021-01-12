@@ -1030,7 +1030,7 @@ def help():
     
     msg = msg + "\n"
     msg = msg + "**Admin commands:** \n"
-    msg = msg + " start_game \n end_game \n create_kingdom kingdomname \n create_region regionname \n set_admin @user \n demote_admin @user \n set_king kingdomname @user \n"
+    msg = msg + " start_game \n end_game \n create_kingdom kingdomname \n create_region kingdomname regionname \n set_admin @user \n demote_admin @user \n set_king kingdomname @user \n"
     
     msg = msg + "\n"
     msg = msg + "**King commands:** \n"
