@@ -83,7 +83,7 @@ info@fantasy-sim.com.
 
 * * * * *
 
-Version: 1.0
+Version: 1.1
 
 This project is licensed under the terms of the Creative Commons
 Attribution-ShareAlike 4.0 International Public License license
