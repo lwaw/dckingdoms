@@ -4,7 +4,8 @@ and regions which can then be joined by users of the discord server.
 Kings can decide to attack regions that are part of other kingdoms.
 Players can train and work every hour to gain strength and workpower.
 Strength can be used in a battle by each user to deal damage and
-workpower can be used by kings to deal damage.
+workpower can be used by kings to deal damage. Stock market data is generated
+by the simple stock market generator tool: https://github.com/lwaw/simple-stock-market-simulator.
 
 This bot stores discrord user id's of people that participate in the
 game. At anytime players can quit the game and the user id will then be
@@ -51,6 +52,12 @@ Citizen commands:
 
 -   defend regionname amount
 
+-   buy\_stocks company\_name amount
+
+-   sell\_stocks company\_name amount
+
+-   buy\_strength amount
+
 -   leave\_game
 
 General commands:
@@ -65,6 +72,12 @@ General commands:
 
 -   status\_battle regionname
 
+-   show\_stocks
+
+-   show\_wallet @user
+
+-   github
+
 If you encouter errors or have suggestions, please send an email to
 info@fantasy-sim.com.
 
@@ -78,4 +91,5 @@ Attribution-ShareAlike 4.0 International Public License license
 Copyright 2021, Laurens Edwards, All rights reserved.
 
 https://github.com/lwaw/dckingdoms
-\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
+
+* * * * *

@@ -3,6 +3,7 @@ import pandas as pd
 import pymysql
 from datetime import datetime, timedelta
 import threading
+import json
 
 server = ""
 user = "" 
@@ -481,7 +482,7 @@ def work(server_id, user_id):
         if user_exists(server_id, user_id):
             citizen_id = get_citizen_id(server_id, user_id)
             
-            query = "SELECT citizen.worked, citizen.kingdom_id FROM citizen WHERE id = '%s'" % (citizen_id)
+            query = "SELECT citizen.worked, citizen.kingdom_id, citizen.currency FROM citizen WHERE id = '%s'" % (citizen_id)
             df = pd.read_sql(query, db)
             
             worked = df['worked'].iloc[0]
@@ -489,6 +490,9 @@ def work(server_id, user_id):
             
             kingdom_id = df['kingdom_id'].iloc[0]
             kingdom_id = int(kingdom_id)
+            
+            currency = df['currency'].iloc[0]
+            currency = float(currency)
             
             query = "SELECT kingdom.workpower FROM kingdom WHERE id = '%s'" % (kingdom_id)
             df = pd.read_sql(query, db)
@@ -499,8 +503,9 @@ def work(server_id, user_id):
             if compare_date(worked):
                 new_date = add_sub_hours(1)
                 workpower = workpower + 5
+                currency = currency + 5
                 
-                sql = "UPDATE citizen SET citizen.worked = '%s' WHERE citizen.id = '%s'" % (new_date, citizen_id)
+                sql = "UPDATE citizen SET citizen.worked = '%s', citizen.currency = '%s' WHERE citizen.id = '%s'" % (new_date, currency, citizen_id)
                 cursor.execute(sql)
                 db.commit()
                 
@@ -848,7 +853,7 @@ def profile(server_id, user_id, user_profile_id, user_profile_name):
         if user_exists(server_id, user_id):
             citizen_id = get_citizen_id(server_id, user_id)
             
-            query = "SELECT citizen.location, citizen.strength, citizen.kingdom_id FROM citizen WHERE id = '%s'" % (citizen_id)
+            query = "SELECT citizen.location, citizen.strength, citizen.kingdom_id, citizen.currency FROM citizen WHERE id = '%s'" % (citizen_id)
             df = pd.read_sql(query, db)
             
             location_id= df['location'].iloc[0]
@@ -859,6 +864,9 @@ def profile(server_id, user_id, user_profile_id, user_profile_name):
         
             kingdom_id = df['kingdom_id'].iloc[0]
             kingdom_id = int(kingdom_id)
+            
+            currency = df['currency'].iloc[0]
+            currency = round(float(currency), 3)
             
             query = "SELECT kingdom.name FROM kingdom WHERE id = '%s'" % (kingdom_id)
             df = pd.read_sql(query, db)
@@ -872,7 +880,7 @@ def profile(server_id, user_id, user_profile_id, user_profile_name):
             region_name = df['name'].iloc[0]
             region_name = str(region_name)
             
-            msg = "User: " + user_profile_name + ", strength: " + strength + ", kingdom: " + kingdom_name + ", location: " + region_name
+            msg = "User: " + user_profile_name + ", strength: " + strength + ", kingdom: " + kingdom_name + ", location: " + region_name + ", currency: " + str(currency)
             return msg
         else:
             msg = "This user does not participate in this game yet."
@@ -1004,6 +1012,209 @@ def status_battle(server_id, region_name, user_id):
         msg = "No game has been started on this server."
         return msg
     
+def read_stockmarket():
+    stock_list = []
+    try:
+        with open("../stock_market/output.txt") as f:
+            for jsonObj in f:
+                stockdict = json.loads(jsonObj)
+                stock_list.append(stockdict)
+    except:
+        pass
+    
+    return stock_list
+
+def show_stocks(server_id):
+    if game_started(server_id): 
+        stock_list = read_stockmarket()
+        msg = ""
+        for stock_index, stock in enumerate(stock_list):  
+            stock_name = stock.get('stock_name')
+            value_scaler = stock.get('value_scaler')
+            current_price = stock.get('current_price') / value_scaler
+            msg = msg + "Company: " + str(stock_name) + ", price: " + str(current_price) + "\n"
+    else:
+        msg = "No game has been started on this server."
+    return msg
+
+def show_wallet(server_id, user_id, user_name):
+    if game_started(server_id):  
+        if user_exists(server_id, user_id):
+            citizen_id = get_citizen_id(server_id, user_id)
+            
+            query = "SELECT stock.* FROM stock WHERE citizen_id = '%s'" % (citizen_id)
+            df = pd.read_sql(query, db)
+        
+            index = df.index
+            count = len(index)
+            
+            if count > 0:
+                msg = str(user_name) + " owns: \n"
+                for index, row in df.iterrows():
+                    msg = msg + "Company: " + str(row['stock_name']) + ", amount: " + str(row['amount']) + "\n"
+                return msg
+            else:
+                msg = "This user does not own any stocks."
+                return msg
+        else:
+            msg = "You are not participating in this game."
+            return msg   
+    else:
+        msg = "No game has been started on this server."
+        return msg
+    
+def buy_stocks(server_id, user_id, buy_stock_name, amount):
+    if game_started(server_id):  
+        if user_exists(server_id, user_id):
+            citizen_id = get_citizen_id(server_id, user_id)
+            stock_list = read_stockmarket()
+            
+            query = "SELECT citizen.currency FROM citizen WHERE citizen.id = '%s'" % (citizen_id)
+            df = pd.read_sql(query, db)
+            currency = df['currency'].iloc[0]
+            
+            msg = "This stock does not exist."
+            for stock_index, stock in enumerate(stock_list):  
+                stock_name = stock.get('stock_name')
+                value_scaler = stock.get('value_scaler')
+                current_price = stock.get('current_price') / value_scaler
+                
+                if buy_stock_name == stock_name:
+                    currency = currency - (amount * current_price) - 0.5 - (amount * 0.01)
+                    if currency >= 0:
+                        query2 = "SELECT stock.id, stock.amount FROM stock WHERE citizen_id = '%s' and stock_name = '%s'" % (citizen_id, stock_name)
+                        df2 = pd.read_sql(query2, db)
+                        
+                        index = df2.index
+                        count = len(index)
+                        
+                        if count > 0:
+                            stock_id = df2['id'].iloc[0]
+                            stock_amount = df2['amount'].iloc[0]
+                            
+                            stock_amount = stock_amount + amount
+                            
+                            sql = "UPDATE stock SET stock.amount = '%s' WHERE stock.id = '%s'" % (stock_amount, stock_id)
+                            cursor.execute(sql)
+                            db.commit()
+                            
+                            sql = "UPDATE citizen SET citizen.currency = '%s' WHERE citizen.id = '%s'" % (currency, citizen_id)
+                            cursor.execute(sql)
+                            db.commit()
+                            
+                            msg = "You purchased the stocks."
+                            return msg
+                        else:
+                            sql = "INSERT INTO stock (citizen_id, stock_name, amount) VALUES (%s, %s, %s)"
+                            val = (citizen_id, stock_name, amount)
+                            
+                            cursor.execute(sql, val)
+                            db.commit()  
+                            
+                            sql = "UPDATE citizen SET citizen.currency = '%s' WHERE citizen.id = '%s'" % (currency, citizen_id)
+                            cursor.execute(sql)
+                            db.commit()
+                            
+                            msg = "You purchased the stocks."
+                            return msg
+                    else:
+                        msg = "You do not have enough currency."
+                        return msg
+        else:
+            msg = "You are not participating in this game."
+            return msg   
+    else:
+        msg = "No game has been started on this server."
+        return msg
+    return msg
+    
+def sell_stocks(server_id, user_id, sell_stock_name, amount):
+    if game_started(server_id):  
+        if user_exists(server_id, user_id):
+            citizen_id = get_citizen_id(server_id, user_id)
+            stock_list = read_stockmarket()
+            
+            query = "SELECT citizen.currency FROM citizen WHERE citizen.id = '%s'" % (citizen_id)
+            df = pd.read_sql(query, db)
+            currency = df['currency'].iloc[0]
+            
+            msg = "This stock does not exist."
+            for stock_index, stock in enumerate(stock_list):  
+                stock_name = stock.get('stock_name')
+                value_scaler = stock.get('value_scaler')
+                current_price = stock.get('current_price') / value_scaler
+                
+                if sell_stock_name == stock_name:
+                    currency = currency + (amount * current_price) - 0.5 - (amount * 0.01)
+                    if currency >= 0:
+                        query2 = "SELECT stock.id, stock.amount FROM stock WHERE citizen_id = '%s' and stock_name = '%s'" % (citizen_id, stock_name)
+                        df2 = pd.read_sql(query2, db)
+                        
+                        index = df2.index
+                        count = len(index)
+                        
+                        if count > 0:
+                            stock_id = df2['id'].iloc[0]
+                            stock_amount = df2['amount'].iloc[0]
+                            
+                            stock_amount = stock_amount - amount
+                            
+                            if stock_amount >= 0:
+                                sql = "UPDATE stock SET stock.amount = '%s' WHERE stock.id = '%s'" % (stock_amount, stock_id)
+                                cursor.execute(sql)
+                                db.commit()
+                                
+                                sql = "UPDATE citizen SET citizen.currency = '%s' WHERE citizen.id = '%s'" % (currency, citizen_id)
+                                cursor.execute(sql)
+                                db.commit()
+                                
+                                msg = "You sold the stocks."
+                                return msg
+                            else:
+                                msg = "You do not have enough stocks in your wallet."
+                        else:
+                            msg = "You do not own this stock."
+                            return msg
+                    else:
+                        msg = "You do not have enough currency."
+                        return msg
+        else:
+            msg = "You are not participating in this game."
+            return msg   
+    else:
+        msg = "No game has been started on this server."
+        return msg
+    return msg
+
+def buy_strength(server_id, user_id, amount):
+    if game_started(server_id):  
+        if user_exists(server_id, user_id):
+            citizen_id = get_citizen_id(server_id, user_id)
+            
+            query = "SELECT citizen.currency, citizen.strength FROM citizen WHERE citizen.id = '%s'" % (citizen_id)
+            df = pd.read_sql(query, db)
+            currency = df['currency'].iloc[0]
+            strength = df['strength'].iloc[0]
+            
+            currency = currency - amount * 0.1
+            strength = strength + amount
+            if currency >= 0:
+                sql = "UPDATE citizen SET citizen.currency = '%s', citizen.strength = '%s' WHERE citizen.id = '%s'" % (currency, strength, citizen_id)
+                cursor.execute(sql)
+                db.commit()
+                
+                msg = "You succesfully bought strength."
+                return msg
+            else:
+                msg = "You do not have enough currency."
+                return msg
+        else:
+            msg = "You are not participating in this game."
+            return msg   
+    else:
+        msg = "No game has been started on this server."
+        return msg
+    
 def leave_game(server_id, user_id):
     if game_started(server_id):  
         if user_exists(server_id, user_id):
@@ -1023,7 +1234,9 @@ def leave_game(server_id, user_id):
         return msg
     
 def help():
-    msg = "All commands start with -dck, arguments are separated by a whitespace: -dck set_admin @user \n"
+    msg = "```"
+    
+    msg = msg + "All commands start with -dck, arguments are separated by a whitespace: -dck set_admin @user \n"
     
     msg = msg + "\n"
     msg = msg + "**By using this bot users agree that their discord user_id will be stored while the game is running. Users may leave the game at any time by using the leave_game command** \n"
@@ -1038,11 +1251,13 @@ def help():
     
     msg = msg + "\n"
     msg = msg + "**Citizen commands:** \n"
-    msg = msg + " join_kingdom kingdomname regionname \n train \n work \n change_location regionname \n attack regionname amount \n defend regionname amount \n leave_game \n"
+    msg = msg + " join_kingdom kingdomname regionname \n train \n work \n change_location regionname \n attack regionname amount \n defend regionname amount \n buy_stocks company_name amount \n sell_stocks company_name amount \n leave_game \n"
 
     msg = msg + "\n"
     msg = msg + "**General commands:** \n"
-    msg = msg + " profile @user \n kingdom kingdomname \n kingdom_list \n region_list \n status_battle regionname \n help"
+    msg = msg + " profile @user \n kingdom kingdomname \n kingdom_list \n region_list \n status_battle regionname \n show_stocks \n show_wallet @user \n github \n help"
+    
+    msg = msg + "```"
     return msg
 
 client = discord.Client()
@@ -1235,6 +1450,73 @@ async def on_message(message):
             
             return
         
+        if message_content[1] == "show_stocks":            
+            try:
+                botreply = show_stocks(server_id)
+                await message.channel.send(botreply)
+            except IndexError:
+                return
+            
+            return
+        
+        if message_content[1] == "show_wallet":            
+            try:
+                mention_id = message.mentions[0]
+                user_profile_id = str(mention_id.id)
+                user_profile_name = str(mention_id.name)
+                botreply = show_wallet(server_id, user_profile_id, user_profile_name)
+                await message.channel.send(botreply)
+            except IndexError:
+                return
+            
+            return
+        
+        if message_content[1] == "buy_stocks" and len(message_content) == 4:
+            buy_stock_name = message_content[2]
+            buy_stock_name = db.escape_string(buy_stock_name)
+            amount = message_content[3]
+            amount = db.escape_string(amount)
+            
+            try: 
+                amount = int(amount)
+                botreply = buy_stocks(server_id, author_id, buy_stock_name, amount)
+                await message.channel.send(botreply)
+                
+            except ValueError:
+                return
+            
+            return
+        
+        if message_content[1] == "sell_stocks" and len(message_content) == 4:
+            buy_stock_name = message_content[2]
+            buy_stock_name = db.escape_string(buy_stock_name)
+            amount = message_content[3]
+            amount = db.escape_string(amount)
+            
+            try: 
+                amount = int(amount)
+                botreply = sell_stocks(server_id, author_id, buy_stock_name, amount)
+                await message.channel.send(botreply)
+                
+            except ValueError:
+                return
+            
+            return
+        
+        if message_content[1] == "buy_strength" and len(message_content) == 3:
+            amount = message_content[2]
+            amount = db.escape_string(amount)
+            
+            try: 
+                amount = int(amount)
+                botreply = buy_strength(server_id, author_id, amount)
+                await message.channel.send(botreply)
+                
+            except ValueError:
+                return
+            
+            return
+        
         if message_content[1] == "kingdom" and len(message_content) == 3:
             kingdom_name = message_content[2]
             kingdom_name = db.escape_string(kingdom_name)
@@ -1280,6 +1562,11 @@ async def on_message(message):
         
         if message_content[1] == "help":
             botreply = help()
+            await message.channel.send(botreply)
+            return
+        
+        if message_content[1] == "github":
+            botreply = "https://github.com/lwaw/dckingdoms"
             await message.channel.send(botreply)
             return
 
