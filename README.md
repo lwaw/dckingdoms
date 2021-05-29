@@ -52,13 +52,15 @@ Citizen commands:
 
 -   defend regionname amount
 
--   buy\_stocks company\_name amount
-
--   sell\_stocks company\_name amount
-
 -   buy\_strength amount
 
 -   leave\_game
+
+** Trading on the stock market has a flat fee of 50 cents and 1 cent per share. **
+
+- buy_stocks company_name amount
+
+- sell_stocks company_name amount
 
 General commands:
 
