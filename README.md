@@ -78,6 +78,8 @@ General commands:
 
 -   show\_wallet @user
 
+-   quote
+
 -   github
 
 If you encounter errors or have suggestions, please send an email to
