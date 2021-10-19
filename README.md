@@ -80,7 +80,7 @@ General commands:
 
 -   github
 
-If you encouter errors or have suggestions, please send an email to
+If you encounter errors or have suggestions, please send an email to
 info@fantasy-sim.com.
 
 * * * * *

@@ -4,6 +4,7 @@ import pymysql
 from datetime import datetime, timedelta
 import threading
 import json
+import random
 
 server = ""
 user = "" 
@@ -20,6 +21,23 @@ def ping_msql():
   db.ping(reconnect=True)
 
 ping_msql()
+
+def read_quotes():
+    quotes = []
+    
+    with open("quotes.txt", 'r') as f:
+        for l in f:
+            quotes.append(l.strip())
+    return quotes
+
+quotes = read_quotes()
+
+def get_quote():
+    global quotes
+    
+    quote = "```" + random.choice(quotes) + "```"
+    
+    return quote
 
 def get_datetime():
         now = datetime.now()
@@ -1027,15 +1045,17 @@ def read_stockmarket():
 def show_stocks(server_id):
     if game_started(server_id): 
         stock_list = read_stockmarket()
-        msg = ""
+        msg = "```"
         for stock_index, stock in enumerate(stock_list):  
             stock_name = stock.get('stock_name')
             value_scaler = stock.get('value_scaler')
             current_price = stock.get('current_price') / value_scaler
-            msg = msg + "Company: " + str(stock_name) + ", price: " + str(current_price) + "\n"
+            msg = msg + str(stock_name) + ", price: " + str(current_price) + "\n"
+        msg = msg + "```"
+        return msg
     else:
         msg = "No game has been started on this server."
-    return msg
+        return msg
 
 def show_wallet(server_id, user_id, user_name):
     if game_started(server_id):  
@@ -1049,9 +1069,11 @@ def show_wallet(server_id, user_id, user_name):
             count = len(index)
             
             if count > 0:
-                msg = str(user_name) + " owns: \n"
+                msg = "```"
+                msg = msg + str(user_name) + " owns: \n"
                 for index, row in df.iterrows():
-                    msg = msg + "Company: " + str(row['stock_name']) + ", amount: " + str(row['amount']) + "\n"
+                    msg = msg + str(row['stock_name']) + ", amount: " + str(row['amount']) + "\n"
+                msg = msg + "```"
                 return msg
             else:
                 msg = "This user does not own any stocks."
@@ -1233,6 +1255,36 @@ def leave_game(server_id, user_id):
         msg = "No game has been started on this server."
         return msg
     
+def get_stat():
+    msg = "```"
+    
+    query = "SELECT game.id FROM game"
+    df = pd.read_sql(query, db)
+    index = df.index
+    count = len(index)
+    msg = msg + "number of games: " + str(count) + "\n"
+    
+    query = "SELECT kingdom.id FROM kingdom"
+    df = pd.read_sql(query, db)
+    index = df.index
+    count = len(index)
+    msg = msg + "number of kingdoms: " + str(count) + "\n"
+    
+    query = "SELECT region.id FROM region"
+    df = pd.read_sql(query, db)
+    index = df.index
+    count = len(index)
+    msg = msg + "number of regions: " + str(count) + "\n"
+    
+    query = "SELECT citizen.id FROM citizen"
+    df = pd.read_sql(query, db)
+    index = df.index
+    count = len(index)
+    msg = msg + "number of citizens: " + str(count) + "\n"
+    
+    msg = msg + "```"
+    return msg
+        
 def help():
     msg = "```"
     
@@ -1255,7 +1307,7 @@ def help():
 
     msg = msg + "\n"
     msg = msg + "**General commands:** \n"
-    msg = msg + " profile @user \n kingdom kingdomname \n kingdom_list \n region_list \n status_battle regionname \n show_stocks \n show_wallet @user \n github \n help"
+    msg = msg + " profile @user \n kingdom kingdomname \n kingdom_list \n region_list \n status_battle regionname \n show_stocks \n show_wallet @user \n quote \n github \n help"
     
     msg = msg + "```"
     return msg
@@ -1569,5 +1621,17 @@ async def on_message(message):
             botreply = "https://github.com/lwaw/dckingdoms"
             await message.channel.send(botreply)
             return
+        
+        if message_content[1] == "quote":
+            botreply = get_quote()
+            await message.channel.send(botreply)
+            return
+        
+        if message_content[1] == "stat":
+            botreply = get_stat()
+            await message.channel.send(botreply)
+            return
 
 client.run('')
+#client.run('')#testbot
+
